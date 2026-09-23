@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Juice Manufacturing Plant SCADA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07131d;color:#e8f5fa;font-family:Arial,sans-serif;overflow:auto}
+#app{min-width:1150px;padding:8px;background:linear-gradient(#122a39,#07131d);min-height:100vh}
+header{height:76px;display:flex;align-items:center;gap:9px;padding:7px 10px;background:linear-gradient(#173b50,#0a1c29);border:1px solid #4e8095}
+.logo{font-size:38px}.title{width:350px}.title h1{font-size:22px;margin:0;letter-spacing:1px}.title p{font-size:11px;color:#8eb9ca;margin:3px 0}
+.box{background:#071722;border:1px solid #3d6577;padding:6px 10px;height:57px;font-size:10px}.clock{width:155px;line-height:18px}.clock b{float:right;color:#fff}
+.status{width:135px;display:flex;align-items:center;gap:8px}.light{width:18px;height:18px;border-radius:50%;background:#555;box-shadow:0 0 6px #555}.light.on{background:#00ff72;box-shadow:0 0 15px #00ff72}.status strong{display:block;color:#ff5252}.status .on+div strong{color:#00ff72}
+.mode{width:100px}.mode select{width:78px;margin-top:4px;background:#0b2634;color:#00ff9d;border:1px solid #42758a}
+button{cursor:pointer;font-weight:bold}.ctrl{height:52px;color:white;border:1px solid #fff}.start{background:#078541;width:78px}.stop{background:#b52027;width:70px}.estop{background:#a90000;border:2px solid #ffd000!important;width:120px;color:white;box-shadow:0 0 10px #f30}
+.tabs{display:flex;gap:2px;margin:5px 0}.tabs button{flex:1;height:31px;background:linear-gradient(#dce5e9,#8b9aa2);border:1px solid #38515d}.tabs .active{background:#1677a4;color:white}
+#plant{border:1px solid #4b7488;padding:7px;background:radial-gradient(circle,#304a58,#10212d 70%)}
+.topprocess{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr 30px 1fr;gap:5px;align-items:center}
+.stage{min-height:305px;border:1px solid #527384;background:rgba(3,14,21,.32);position:relative}.stage h3{margin:0;height:35px;background:linear-gradient(#e3eaed,#a7b4ba);color:#07131d;text-align:center;padding:9px 3px;font-size:11px}
+.arrow{font-size:25px;color:#42ff65;text-shadow:0 0 8px #0f6;text-align:center}
+.area{height:225px;position:relative}.label{text-align:center;font-size:10px;font-weight:bold}.label small{color:#79aabc}
+.hopper{position:absolute;left:23%;top:28px;width:95px;height:92px;border:3px solid #77878e;background:#58656a;clip-path:polygon(0 0,100% 0,100% 48%,65% 100%,35% 100%,0 48%);padding:8px;text-align:center;font-size:18px}
+.lvl{position:absolute;right:-13px;top:3px;width:9px;height:88px;background:#081018;border:1px solid #aaa}.lvl i{position:absolute;bottom:0;width:100%;height:78%;background:#00ed73}
+.conv{position:absolute;left:5%;right:5%;bottom:22px;height:42px}.belt{position:absolute;bottom:5px;width:100%;height:13px;background:repeating-linear-gradient(90deg,#252b2f 0 17px,#777 18px 20px);border:2px solid #111}.fruits{position:absolute;top:-12px;white-space:nowrap;font-size:18px}.running .fruits{animation:move 3s linear infinite}@keyframes move{from{transform:translateX(-60px)}to{transform:translateX(180px)}}
+.ledrow{text-align:center;font-size:9px}.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555}.led.on{background:#00ff73;box-shadow:0 0 9px #00ff73}.ledrow b{color:#777}.ledrow b.ontext{color:#00ff73}
+.wash{position:absolute;left:17%;top:40px;width:135px;height:115px;border:4px solid #788a92;border-radius:12px;overflow:hidden;background:#27363d}.water{position:absolute;bottom:0;width:100%;height:65%;background:linear-gradient(#1baeea88,#07547dcc)}.washfruits{position:absolute;bottom:20px;left:18px;font-size:20px}.drops{position:absolute;top:9px;left:28px;color:#6de5ff;font-size:20px}.pump{position:absolute;bottom:5px;left:42%;width:38px;height:27px;border-radius:50%;background:#149050;border:2px solid #00dd73;text-align:center;padding-top:3px}.washpipe{position:absolute;bottom:30px;left:48%;height:35px;border-left:5px solid #138b5c}
+.boiler{position:absolute;left:25%;top:27px;width:115px;height:150px}.boilerbody{height:125px;border:4px solid #87979d;border-radius:15px 15px 28px 28px;overflow:hidden;background:linear-gradient(90deg,#4d585d,#c8ced1,#4c575c);position:relative}.boilerbody .hot{position:absolute;bottom:0;width:100%;height:55%;background:#e85e31cc}.coil{position:absolute;bottom:18px;left:24px;color:#ffd000;font-size:23px}.steam{position:absolute;top:-12px;right:30px;font-size:25px;animation:steam 2s infinite}@keyframes steam{50%{opacity:.3;transform:translateY(-8px)}}
+.temp{position:absolute;right:2px;top:40px;background:#07121a;border:1px solid #507487;padding:6px;color:#ff5151}.temp small{display:block;color:#b7d0da;font-size:7px}
+.extract{position:absolute;left:9%;top:60px;width:145px;height:55px;border-radius:30px;border:4px solid #8b999e;background:linear-gradient(#536066,#c4cbce,#4c575b);text-align:center;padding:12px;color:#ffae00;font-size:23px}.out{position:absolute;left:35%;top:125px;color:#ffa500}.pulpp{position:absolute;right:10%;bottom:15px;width:55px;height:80px;border:3px solid #7e8d92;border-radius:8px;overflow:hidden;text-align:center}.pulpp i{position:absolute;bottom:0;width:100%;height:62%;background:#d87920}.pulpp span{position:relative;z-index:2}
+.mixer{position:absolute;left:18%;top:28px;width:125px;height:150px;border:4px solid #89999e;border-radius:15px 15px 30px 30px;overflow:hidden;background:linear-gradient(90deg,#4c585d,#c6cccf,#4d595d)}.juice{position:absolute;bottom:0;width:100%;height:70%;background:#f29a28dd}.blade{position:absolute;top:75px;left:35px;color:white;font-size:35px}.agit{position:absolute;top:-27px;left:45px;font-size:30px;color:#00ee78}.reading{position:absolute;right:4px;top:70px;background:#07131c;padding:5px;font-size:8px}.reading b{display:block;color:#00ff73;font-size:16px}.add{position:absolute;right:5%;top:55px}.smalltank{display:inline-block;width:23px;height:45px;border:2px solid #9aa9ae;border-radius:5px;margin:2px}
+.bottomprocess{display:grid;grid-template-columns:1.5fr 25px 1fr 25px 1.5fr 25px 1fr;gap:5px;align-items:center;border-top:2px solid #4a7080;margin-top:6px;padding-top:6px}.lower{min-height:225px;border:1px solid #527384;background:#07172255}.lower h3{margin:0;height:32px;background:linear-gradient(#e3eaed,#a7b4ba);color:#07131d;text-align:center;padding:9px;font-size:11px}
+.fillarea{height:155px;position:relative}.filltank{position:absolute;left:37%;top:12px;width:100px;height:45px;border:3px solid #89989e;border-radius:7px;background:#69767b}.nozzles{position:absolute;left:37%;top:53px;width:100px;text-align:center;color:#52dfff;letter-spacing:13px}.bottles{position:absolute;bottom:18px;width:100%;white-space:nowrap;overflow:hidden}.bottles span{font-size:25px;margin:0 3px}.running .bottles span{animation:bmove 3s linear infinite}@keyframes bmove{from{transform:translateX(-120px)}to{transform:translateX(250px)}}.caparea,.packarea,.dispatcharea{height:155px;display:flex;align-items:center;justify-content:center}.caphead{font-size:45px}.capbottle{font-size:35px;margin-top:40px}.boxes{font-size:42px;display:flex;gap:8px}.truck{font-size:65px}.flow{position:absolute;right:5px;top:45px;background:#07131c;border:1px solid #41687a;padding:5px;font-size:8px}.flow b{display:block;color:#00ff9d;font-size:16px}
+.parameters{margin-top:7px;border:1px solid #4c7283;background:#091a26;padding:8px}.parameters h2,.panel h2{font-size:11px;margin:0 0 6px;color:#b7d3dd}.paramgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.param{background:#06111a;border:1px solid #34586a;text-align:center;padding:7px}.param span{font-size:8px;color:#72a0b0}.param small{display:block;font-size:7px;color:#77919b}.param strong{display:block;margin-top:5px;font:19px monospace;color:#00ff73}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}.panel{min-height:190px;background:#091a26;border:1px solid #4c7283;padding:9px}.graph{height:145px;border-left:1px solid #58717d;border-bottom:1px solid #58717d;background:repeating-linear-gradient(0deg,transparent 0 28px,#284450 29px),repeating-linear-gradient(90deg,transparent 0 60px,#284450 61px)}svg{width:100%;height:100%}.alarm{height:145px;overflow:auto;font:9px monospace}.alarm div{display:grid;grid-template-columns:75px 1fr 55px;padding:6px;border-bottom:1px solid #193947}.alarm b{color:#00ff73}#ack{float:right;background:#345c6b;color:white;border:1px solid #71909b;padding:3px 10px}
+footer{text-align:center;margin-top:7px;padding:7px;border:1px solid #34586a;background:#06111a;font-size:9px;color:#75939e}footer b{color:#00ff73}
+@media(max-width:1200px){body{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header>
+  <div class="logo">🍊</div>
+  <div class="title"><h1>JUICE MANUFACTURING PLANT</h1><p>SCADA / HMI CONTROL SYSTEM</p></div>
+  <div class="box clock">DATE <b id="date"></b><br>TIME <b id="clock"></b><br>SHIFT <b>A</b></div>
+  <div class="box status"><i id="light" class="light"></i><div>PLANT STATUS<strong id="status">STOPPED</strong></div></div>
+  <div class="box mode">MODE<select id="mode"><option>AUTO</option><option>MANUAL</option></select></div>
+  <button class="ctrl start" id="start">▶ START</button>
+  <button class="ctrl stop" id="stop">■ STOP</button>
+  <button class="ctrl estop" id="estop">⚠ EMERGENCY<br>STOP</button>
+</header>
+
+<div class="tabs"><button class="active">PROCESS OVERVIEW</button><button>ALARMS</button><button>TRENDS</button><button>RECIPE</button><button>SETTINGS</button></div>
+
+<main id="plant">
+
+<div class="topprocess">
+
+<section class="stage"><h3>1. RAW MATERIAL COLLECTION</h3><div class="area">
+<div class="hopper">🍎 🍊<br>🍊 🍎</div><div class="lvl"><i></i></div>
+<div class="label" style="position:absolute;top:135px;width:100%">FRUIT HOPPER<br><small>H-101</small></div>
+<div id="conv" class="conv"><div class="belt"></div><div class="fruits">🍊 🍎 🍊 🍎 🍊</div></div>
+</div><div class="ledrow"><i id="m1" class="led"></i> CONVEYOR-1 <b id="m1t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="stage"><h3>2. CLEANING & WASHING</h3><div class="area">
+<div class="wash"><div class="water"></div><div class="washfruits">🍎 🍊 🍎</div><div class="drops">💧 💧 💧</div></div>
+<div class="label" style="position:absolute;top:160px;width:100%">WASHING TANK<br><small>T-101</small></div><div class="pump">⚙</div>
+</div><div class="ledrow"><i id="m2" class="led"></i> WASH PUMP <b id="m2t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="stage"><h3>3. BOILING / BLANCHING</h3><div class="area">
+<div class="boiler"><div class="boilerbody"><div class="hot"></div><div class="coil">≋≋≋</div></div><div class="steam">♨</div></div>
+<div class="temp"><small>TT-101</small><b id="temp">25°C</b></div>
+<div class="label" style="position:absolute;top:180px;width:100%">HOT WATER BOILER<br><small>T-102</small></div>
+</div><div class="ledrow"><i id="m3" class="led"></i> HEATER <b id="m3t">OFF</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="stage"><h3>4. PULP EXTRACTION</h3><div class="area">
+<div class="extract">⚙⚙⚙</div><div class="out">🟠🟠🟠</div>
+<div class="label" style="position:absolute;top:120px;width:100%">PULP EXTRACTOR<br><small>M-102</small></div>
+<div class="pulpp"><i></i><span>62%</span></div>
+</div><div class="ledrow"><i id="m4" class="led"></i> EXTRACTOR <b id="m4t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="stage"><h3>5. JUICE STORAGE & MIXING</h3><div class="area">
+<div class="mixer"><div class="juice"></div><div class="blade">─┼─</div><div class="agit">⚙</div></div>
+<div class="reading">LT-101<b id="level">70%</b></div><div class="add"><div class="smalltank"></div><div class="smalltank"></div></div>
+<div class="label" style="position:absolute;top:180px;width:100%">MIXING TANK<br><small>T-104</small></div>
+</div><div class="ledrow"><i id="m5" class="led"></i> AGITATOR <b id="m5t">STOPPED</b></div></section>
+
+</div>
+
+<div class="bottomprocess">
+
+<section class="lower"><h3>6. BOTTLE FILLING</h3><div class="fillarea">
+<div class="filltank"></div><div class="nozzles">↓ ↓ ↓</div>
+<div id="bottles" class="bottles"><span>🧴</span><span>🧴</span><span>🧴</span><span>🧴</span><span>🧴</span><span>🧴</span></div>
+<div class="flow">FT-101<b id="flow">0 L/min</b></div></div>
+<div class="ledrow"><i id="m6" class="led"></i> FILLING <b id="m6t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="lower"><h3>7. CAPPING</h3><div class="caparea"><div><div class="caphead">⚙</div><div class="capbottle">🧴</div></div></div><div class="ledrow"><i id="m7" class="led"></i> CAPPER <b id="m7t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="lower"><h3>8. LABELING & PACKAGING</h3><div class="packarea"><div class="boxes">🏷️ 📦 📦</div></div><div class="ledrow"><i id="m8" class="led"></i> PACKAGING <b id="m8t">STOPPED</b></div></section>
+
+<div class="arrow">➜</div>
+
+<section class="lower"><h3>9. DISPATCH</h3><div class="dispatcharea"><div class="truck">📦 🚚</div></div><div class="ledrow"><i id="m9" class="led"></i> DISPATCH <b id="m9t">STOPPED</b></div></section>
+
+</div>
+
+<section class="parameters"><h2>PROCESS PARAMETERS</h2><div class="paramgrid">
+<div class="param"><span>TT-101</span><small>BOILER TEMPERATURE</small><strong id="pTemp">25 °C</strong></div>
+<div class="param"><span>LT-101</span><small>JUICE TANK LEVEL</small><strong id="pLevel">70 %</strong></div>
+<div class="param"><span>FT-101</span><small>FLOW RATE</small><strong id="pFlow">0 L/min</strong></div>
+<div class="param"><span>SPD-101</span><small>CONVEYOR SPEED</small><strong id="pSpeed">0 RPM</strong></div>
+<div class="param"><span>CT-101</span><small>PRODUCTION COUNT</small><strong id="count">0</strong></div>
+<div class="param"><span>TARGET</span><small>BATCH TARGET</small><strong>1000</strong></div>
+</div></section>
+
+<div class="bottom">
+<section class="panel"><h2>TREND - BOILER TEMPERATURE</h2><div class="graph"><svg viewBox="0 0 500 145" preserveAspectRatio="none"><polyline id="trend" points="0,130 80,120 160,110 240,90 320,70 400,55 500,40" fill="none" stroke="#ff4d4d" stroke-width="3"/></svg></div></section>
+<section class="panel"><h2>ALARM & EVENT LOG <button id="ack">ACK</button></h2><div id="alarms" class="alarm"><div><span>--:--:--</span><span>SCADA SYSTEM READY</span><b>NORMAL</b></div></div></section>
+</div>
+
+<footer>PLC: <b>ONLINE</b> &nbsp;|&nbsp; COMMUNICATION: <b>ETHERNET</b> &nbsp;|&nbsp; SCAN: <b>25 ms</b> &nbsp;|&nbsp; SYSTEM: <b id="foot">READY</b></footer>
+
+</main>
+</div>
+
+<script>
+let running=false,estop=false,temp=25,level=70,count=0,flow=0,speed=0;
+const $=id=>document.getElementById(id);
+function clock(){let d=new Date();$('date').textContent=d.toLocaleDateString('en-GB');$('clock').textContent=d.toLocaleTimeString()}
+setInterval(clock,1000);clock();
+
+function log(msg,type='NORMAL'){
+ let d=new Date(),r=document.createElement('div');
+ r.innerHTML='<span>'+d.toLocaleTimeString()+'</span><span>'+msg+'</span><b>'+type+'</b>';
+ $('alarms').prepend(r);
+}
+function status(){
+ $('status').textContent=estop?'EMERGENCY STOP':running?'RUNNING':'STOPPED';
+ $('status').style.color=estop?'#ff3030':running?'#00ff73':'#ff5252';
+ $('light').className='light'+(running&&!estop?' on':'');
+ $('foot').textContent=estop?'EMERGENCY':running?'RUNNING':'READY';
+}
+function motor(n,on){
+ $('m'+n).className='led'+(on?' on':'');
+ $('m'+n+'t').textContent=on?'RUNNING':'STOPPED';
+ $('m'+n+'t').className=on?'ontext':'';
+}
+function startPlant(){
+ if(estop){log('START BLOCKED - RESET EMERGENCY STOP','FAULT');return}
+ if(running)return;
+ running=true;status();log('PLANT STARTED IN AUTO MODE');
+ [1,2,3,4,5,6,7,8,9].forEach((n,i)=>setTimeout(()=>{if(running&&!estop)motor(n,n===3?'HEATER':true)},i*500));
+ $('conv').classList.add('running');$('bottles').classList.add('running');
+}
+$('start').onclick=startPlant;
+$('stop').onclick=()=>{running=false;stopAll();status();log('NORMAL PLANT STOP')};
+$('estop').onclick=()=>{estop=true;running=false;stopAll();status();log('EMERGENCY STOP ACTIVATED','FAULT');log('ALL MOTORS AND ACTUATORS STOPPED','FAULT')};
+$('ack').onclick=()=>log('ACTIVE ALARMS ACKNOWLEDGED');
+$('mode').onchange=e=>log('CONTROL MODE CHANGED TO '+e.target.value);
+
+function stopAll(){for(let i=1;i<=9;i++)motor(i,false);$('conv').classList.remove('running');$('bottles').classList.remove('running');flow=0;speed=0}
+
+let pts=[130,125,120,115,108,100,92,85,78,70];
+setInterval(()=>{
+ if(running&&!estop){
+   temp=Math.min(85,temp+.55);
+   level=Math.min(95,level+.08);
+   if(temp>70&&level>15){flow=25;speed=60;count++;level-=.18}
+ }else{temp=Math.max(25,temp-.12);flow=0;speed=0}
+ $('temp').textContent=Math.round(temp)+'°C';
+ $('pTemp').textContent=Math.round(temp)+' °C';
+ $('level').textContent=Math.round(level)+'%';
+ $('pLevel').textContent=Math.round(level)+' %';
+ $('flow').textContent=flow+' L/min';
+ $('pFlow').textContent=flow+' L/min';
+ $('pSpeed').textContent=speed+' RPM';
+ $('count').textContent=count;
+ let y=145-((temp-20)/70)*125;
+ pts.push(Math.max(15,Math.min(140,y)));if(pts.length>30)pts.shift();
+ $('trend').setAttribute('points',pts.map((v,i)=>((i/(pts.length-1))*500)+','+v).join(' '));
+},500);
+
+status();log('PLC COMMUNICATION ONLINE');log('SCADA SYSTEM READY');
+</script>
+</body>
+</html>
